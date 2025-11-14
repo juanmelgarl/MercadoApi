@@ -2,8 +2,8 @@
 {
     public class ProductoPatchDto
     {
-        public bool? Comprado { get; set; }
-        public int? Cantidad { get; set; }
+        public bool Comprado { get; set; }
+        public int Cantidad { get; set; }
     }
 
 }
