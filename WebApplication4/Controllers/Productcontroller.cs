@@ -24,7 +24,7 @@ namespace WebApplication4.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult Buscarproducto()
         {
-            
+
             var Productos = _dbContext.Productos
                 .Select(p => new ProductoResponseDto
                 {
@@ -32,7 +32,7 @@ namespace WebApplication4.Controllers
                     Marca = p.Marca ?? "desconocida",
                     Precio = p.Precio,
                     Stock = p.Cantidad,
-                     
+
 
                 })
                 .ToList();
@@ -71,14 +71,14 @@ namespace WebApplication4.Controllers
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult Actualizarproducto(int id,ProductoRequestDto dto)
+        public ActionResult Actualizarproducto(int id, ProductoRequestDto dto)
         {
             if (!ModelState.IsValid)
             {
                 return NotFound();
             }
-            var producto = _dbContext.Productos.FirstOrDefault(x => x.Id == id); 
-             if (producto == null)
+            var producto = _dbContext.Productos.FirstOrDefault(x => x.Id == id);
+            if (producto == null)
             {
                 return NotFound();
             }
@@ -89,19 +89,19 @@ namespace WebApplication4.Controllers
 
             _dbContext.SaveChanges();
             return Ok();
-               
-            
+
+
         }
         [HttpPatch("{id}")]
 
-        public ActionResult Actualizarcategoria(int id,ProductoPatchDto dto)
+        public ActionResult Actualizarcategoria(int id, ProductoPatchDto dto)
         {
             if (!ModelState.IsValid)
             {
                 return NotFound();
             }
             var categoria = _dbContext.Productos.FirstOrDefault(x => x.Id == id);
-                if (categoria == null)
+            if (categoria == null)
             {
                 return NotFound();
             }
@@ -132,21 +132,42 @@ namespace WebApplication4.Controllers
         [HttpGet("filtrarporprecio")]
         public ActionResult Filtrarporprecio()
         {
-          
-                var producto = _dbContext.Productos
-                    .OrderByDescending(x => x.Precio)
-                    .Select(p => new ProductoResponseDto
-                    {
-                        Marca = p.Marca,
-                        Precio = p.Precio,
-                        
-                        
+
+            var producto = _dbContext.Productos
+                .OrderByDescending(x => x.Precio)
+                .Select(p => new ProductoResponseDto
+                {
+                    Marca = p.Marca,
+                    Precio = p.Precio,
 
 
-                    })
-                    .ToList();
+
+
+                })
+                .ToList();
             return Ok(producto);
+        }
+        [HttpGet("pormarca/{marca}/")]
+
+        public ActionResult Buscarpornombre(string? marca)
+        {
+            var productos = _dbContext.Productos.Where(p => p.Marca == marca);
+            if (!productos.Any())
+            {
+                return NotFound();
             }
+            return Ok(productos);
+        }
+        [HttpGet("porprecio/{precio:int}")]
+        public ActionResult Buscarporprecio(int precio)
+        {
+            var producto = _dbContext.Productos.Where(x => x.Precio == precio);
+            if (!producto.Any())
+            {
+                return NotFound();
+            }
+            return Ok(producto);
         }
     }
+}
 
