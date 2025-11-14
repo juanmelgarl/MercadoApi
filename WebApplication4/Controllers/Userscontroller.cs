@@ -20,20 +20,18 @@ namespace WebApplication4.Controllers
             _dbContext = dbContext;
         }
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+                [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult Obtenertodo()
         {
-            if (!ModelState.IsValid)
-            {
-                return NotFound();
-            }
+           
             var usuarios = _dbContext.Usuarios
                 .Select(u => new UsuarioResponseDto
                 {
                     NombreCompleto = u.Nombre,
                     CorreoElectronico = u.Correoelectronico,
-                    Id = u.Id,
+                      Id = u.Id,
+                    
 
 
                 })
@@ -77,6 +75,10 @@ namespace WebApplication4.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult Actualizarusuario(int id,UsuarioRequestDto dto)
         {
+            if (!ModelState.IsValid)
+            {
+                return NotFound();
+            }
             var usuarios = _dbContext.Usuarios.FirstOrDefault(x => x.Id == id);
             if (usuarios == null)
             {
