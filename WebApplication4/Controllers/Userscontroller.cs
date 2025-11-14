@@ -22,14 +22,16 @@ namespace WebApplication4.Controllers
         [HttpGet]
                 [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult Obtenertodo()
+        public ActionResult Obtenertodo(Paginationrequest pagination)
         {
            
             var usuarios = _dbContext.Usuarios
+                 .Skip((pagination.Pagenumber - 1) * pagination.Pagesize)
+           .Take(pagination.Pagesize)
                 .Select(u => new UsuarioResponseDto
                 {
-                    NombreCompleto = u.Nombre,
-                    CorreoElectronico = u.Correoelectronico,
+                    NombreCompleto = u.Nombre ?? "null",
+                    CorreoElectronico = u.Correoelectronico ?? "null",
                       Id = u.Id,
                     
 
@@ -46,7 +48,7 @@ namespace WebApplication4.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult Buscarporid(int id)
+        public ActionResult Buscarporid(int id, Paginationrequest pagination)
         {
             var buscar = _dbContext.Usuarios.FirstOrDefault(x => x.Id == id);
                 if (buscar == null)
