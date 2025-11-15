@@ -22,13 +22,11 @@ namespace WebApplication4.Controllers
     {
         private readonly AppDbContext _dbContext;
         private readonly IConfiguration _config;
-        private readonly UserManager<IdentityUser> _userManager;
-
-        public Userscontroller(AppDbContext dbContext,IConfiguration config, UserManager<IdentityUser> userManager)
+      
+        public Userscontroller(AppDbContext dbContext)
         {
             _dbContext = dbContext;
-            _config = config;
-            _userManager = userManager;
+          
         }
         [HttpGet]
                 [ProducesResponseType(StatusCodes.Status200OK)]
@@ -126,41 +124,7 @@ namespace WebApplication4.Controllers
             return Ok();
 
         }
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] Loginrequest request)
-        {
-            var user = await _userManager.FindByNameAsync(request.Username);
-            if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
-                return Unauthorized("Credenciales inválidas");
-
-            var roles = await _userManager.GetRolesAsync(user);
-
-            var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.Name, user.UserName),
-        new Claim(ClaimTypes.NameIdentifier, user.Id)
-    };
-
-            foreach (var role in roles)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, role));
-            }
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.Now.AddHours(2),
-                signingCredentials: creds
-            );
-
-            return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
-        }
-
-
+       
 
 
 

@@ -5,7 +5,7 @@ using WebApplication4.Clases;
 
 namespace WebApplication4.Models
 {
-    public class AppDbContext : IdentityDbContext<IdentityUser>
+    public class AppDbContext : DbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
@@ -20,14 +20,12 @@ namespace WebApplication4.Models
         {
             base.OnModelCreating(modelBuilder);
 
-            // Orden → Items (1 → N)
             modelBuilder.Entity<OrderItem>()
                 .HasOne(oi => oi.Orden)
                 .WithMany(o => o.Items)
                 .HasForeignKey(oi => oi.OrdenId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Producto → OrdenItems (1 → N)
             modelBuilder.Entity<OrderItem>()
                 .HasOne(oi => oi.Producto)
                 .WithMany(p => p.OrdenItems)
