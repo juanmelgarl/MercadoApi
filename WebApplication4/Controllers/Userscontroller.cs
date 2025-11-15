@@ -9,6 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using WebApplication4.Clases;
 using WebApplication4.DTOS.Request;
 using WebApplication4.DTOS.Response;
@@ -22,27 +23,26 @@ namespace WebApplication4.Controllers
     {
         private readonly AppDbContext _dbContext;
         private readonly IConfiguration _config;
-      
+
         public Userscontroller(AppDbContext dbContext)
         {
             _dbContext = dbContext;
-          
+
         }
         [HttpGet]
-                [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult Obtenertodo(Paginationrequest pagination)
+        public ActionResult Obtenertodo()
         {
-           
+
             var usuarios = _dbContext.Usuarios
-                 .Skip((pagination.Pagenumber - 1) * pagination.Pagesize)
-           .Take(pagination.Pagesize)
+
                 .Select(u => new UsuarioResponseDto
                 {
                     NombreCompleto = u.Nombre ?? "null",
                     CorreoElectronico = u.Correoelectronico ?? "null",
-                      Id = u.Id,
-                    
+                    Id = u.Id,
+
 
 
                 })
@@ -57,10 +57,10 @@ namespace WebApplication4.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult Buscarporid(int id, Paginationrequest pagination)
+        public ActionResult Buscarporid(int id)
         {
             var buscar = _dbContext.Usuarios.FirstOrDefault(x => x.Id == id);
-                if (buscar == null)
+            if (buscar == null)
             {
                 return BadRequest("no se encontro al usuario.");
             }
@@ -69,7 +69,7 @@ namespace WebApplication4.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(Roles = "Admin")]
+       
         public ActionResult Borrarusuario(int id)
         {
             var usuario = _dbContext.Usuarios.FirstOrDefault(x => x.Id == id);
@@ -85,7 +85,7 @@ namespace WebApplication4.Controllers
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult Actualizarusuario(int id,UsuarioRequestDto dto)
+        public ActionResult Actualizarusuario(int id, UsuarioRequestDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -124,11 +124,24 @@ namespace WebApplication4.Controllers
             return Ok();
 
         }
-       
 
+        [HttpGet("ExportarCsv")]
+        public ActionResult Exportar()
+        {
+            var productos = _dbContext.Usuarios.ToList();
+            var csv = new StringBuilder();
+            csv.AppendLine("Id,Nombre,Apellido,Numero,Correo");
 
+            foreach (var p in productos)
+            {
+                csv.AppendLine($"{p.Id},{p.Nombre},{p.Apellido},{p.Numerotelefono},{p.Correoelectronico}");
+            }
+
+            return File(Encoding.UTF8.GetBytes(csv.ToString()), "text/csv", "usuarios.csv");
+        }
 
 
     }
-
 }
+
+

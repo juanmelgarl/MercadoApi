@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 using WebApplication4.DTOS.Request;
 using WebApplication4.DTOS.Response;
 using WebApplication4.Models;
@@ -19,32 +20,28 @@ namespace WebApplication4.Controllers
             _dbContext = dbContext;
         }
 
-        [HttpGet]
+        [HttpGet("buscar")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult Buscarproducto(Paginationrequest pagination)
+        public ActionResult Buscarproducto()
         {
 
-            var Productos = _dbContext.Productos
-           .Skip((pagination.Pagenumber - 1) * pagination.Pagesize)
-           .Take(pagination.Pagesize)
-                .Select(p => new ProductoResponseDto
-                {
-                    Id = p.Id,
-                    Marca = p.Marca ?? "desconocida",
-                    Precio = p.Precio,
-                    Stock = p.Cantidad,
-
-
-                })
-                .ToList();
-            return Ok(Productos);
+            var productos = _dbContext.Productos
+                  .Select(x => new ProductoResponseDto
+                  {
+                      Id = x.Id,
+                      Marca = x.Marca,
+                      Precio = x.Precio,
+                      Stock = x.Cantidad
+                  })
+                  .ToList();
+            return Ok(productos);
 
         }
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult Buscarporid(int id, Paginationrequest pagination)
+        public ActionResult Buscarporid(int id)
         {
             var productos = _dbContext.Productos.FirstOrDefault(x => x.Id == id);
 
@@ -78,7 +75,7 @@ namespace WebApplication4.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest ();
+                return BadRequest();
             }
             var producto = _dbContext.Productos.FirstOrDefault(x => x.Id == id);
             if (producto == null)
@@ -138,7 +135,7 @@ namespace WebApplication4.Controllers
         [HttpGet("filtrarporprecio")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult Filtrarporprecio(Paginationrequest pagination)
+        public ActionResult Filtrarporprecio()
         {
 
             var producto = _dbContext.Productos
@@ -158,7 +155,7 @@ namespace WebApplication4.Controllers
         [HttpGet("pormarca/{marca}/")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult Buscarpornombre(string? marca, Paginationrequest pagination)
+        public ActionResult Buscarpornombre(string? marca)
         {
             var productos = _dbContext.Productos.Where(p => p.Marca == marca);
             if (!productos.Any())
@@ -170,7 +167,7 @@ namespace WebApplication4.Controllers
         [HttpGet("porprecio/{precio:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult Buscarporprecio(int precio, Paginationrequest pagination)
+        public ActionResult Buscarporprecio(int precio)
         {
             var producto = _dbContext.Productos.Where(x => x.Precio == precio);
             if (!producto.Any())
@@ -183,15 +180,76 @@ namespace WebApplication4.Controllers
         public ActionResult Promedioprecio()
         {
             var Promedio = _dbContext.Productos.Average(x => x.Precio);
-            
+
             return Ok(Promedio.ToString("C"));
         }
         [HttpGet("Total")]
         public ActionResult Calculartotal()
         {
             var Total = _dbContext.Productos.Sum(x => x.Precio * x.Cantidad);
-            
+
             return Ok(Total.ToString("C"));
         }
+        [HttpDelete("EliminarSinstock")]
+        public ActionResult Delete()
+        {
+            var buscar = _dbContext.Productos.Where(x => x.Cantidad == 0).ToList();
+            _dbContext.Productos.RemoveRange(buscar);
+
+
+            return Ok("Se borraron los Productos con stock 0");
+
+        }
+        [HttpDelete("eliminarpormarca/{marca}")]
+        public ActionResult DeleteFormarca(string marca)
+        {
+            var producto = _dbContext.Productos.Where(p => p.Marca == marca);
+            if (!producto.Any())
+            {
+                return NotFound();
+            }
+            _dbContext.Productos.RemoveRange(producto);
+            return Ok();
+        }
+        [HttpGet("Exportar")]
+        public ActionResult Exportar()
+        {
+            var productos = _dbContext.Productos.ToList();
+            var csv = new StringBuilder();
+            csv.AppendLine("Id,Marca,Precio,Cantidad,Comprado");
+
+            foreach (var p in productos)
+            {
+                csv.AppendLine($"{p.Id},{p.Marca},{p.Precio},{p.Cantidad},{p.Comprado}");
+            }
+
+            return File(Encoding.UTF8.GetBytes(csv.ToString()), "text/csv", "productos.csv");
+        }
+        [HttpGet("masbarato")]
+        public ActionResult Productomasbarato()
+        {
+            var producto = _dbContext.Productos
+                .OrderBy(x => x.Precio)
+                .FirstOrDefault();
+            if (producto == null)
+            {
+                return NotFound();
+            }
+            return Ok(producto);
+        }
+        [HttpGet("Mascaro")]
+        public ActionResult Mascaro()
+        {
+            var productos = _dbContext.Productos
+                .OrderByDescending(x => x.Precio)
+                .FirstOrDefault();
+            if (productos == null)
+            {
+                return NotFound();
+            }
+            return Ok(productos);
+        }
+      
     }
 }
+
