@@ -44,10 +44,10 @@ namespace WebApplication4.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult Buscarporid(int id,Paginationrequest pagination)
+        public ActionResult Buscarporid(int id, Paginationrequest pagination)
         {
             var productos = _dbContext.Productos.FirstOrDefault(x => x.Id == id);
-             
+
             if (productos == null)
             {
                 return NotFound("no se encontro el producto");
@@ -78,7 +78,7 @@ namespace WebApplication4.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return NotFound();
+                return BadRequest ();
             }
             var producto = _dbContext.Productos.FirstOrDefault(x => x.Id == id);
             if (producto == null)
@@ -102,7 +102,7 @@ namespace WebApplication4.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return NotFound();
+                return BadRequest();
             }
             var categoria = _dbContext.Productos.FirstOrDefault(x => x.Id == id);
             if (categoria == null)
@@ -120,7 +120,7 @@ namespace WebApplication4.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return NotFound();
+                return BadRequest();
             }
             var producto = new Producto
             {
@@ -179,6 +179,19 @@ namespace WebApplication4.Controllers
             }
             return Ok(producto);
         }
+        [HttpGet("promedio")]
+        public ActionResult Promedioprecio()
+        {
+            var Promedio = _dbContext.Productos.Average(x => x.Precio);
+            
+            return Ok(Promedio.ToString("C"));
+        }
+        [HttpGet("Total")]
+        public ActionResult Calculartotal()
+        {
+            var Total = _dbContext.Productos.Sum(x => x.Precio * x.Cantidad);
+            
+            return Ok(Total.ToString("C"));
+        }
     }
 }
-
